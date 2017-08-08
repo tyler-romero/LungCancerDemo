@@ -6,13 +6,13 @@ from microsoftml import rx_predict as ml_predict
 
 # Connect to SQL Server and set compute context
 connection_string = get_connection_string()
-sql = RxInSqlServer(connection_string = connection_string)
+sql = RxInSqlServer(connection_string=connection_string)
 local = RxLocalSeq()
 rx_set_compute_context(local)
 
 
 # Specify patient to make prediction for
-PatientIndex = 5
+PatientIndex = 20
 
 
 # Select patient data
@@ -26,7 +26,6 @@ classifier = retrieve_model(TABLE_CLASSIFIERS, connection_string, FASTTREE_MODEL
 
 # Make Prediction on a single patient
 predictions = ml_predict(classifier, data=patient_sql, extra_vars_to_write=["label", "patient_id"])
-
 
 print("The probability of cancer for patient {} with patient_id {} is {}%".format(PatientIndex, predictions["patient_id"].iloc[0], predictions["Probability"].iloc[0]*100))
 if predictions["label"].iloc[0] == 0:

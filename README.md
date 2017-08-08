@@ -39,7 +39,7 @@ We are going to upload the images to SQL. The reason for doing this, instead of 
 
 The first step is to create in SQL Server a database called `lung_cancer_database`. 
 
-The next step is to create a table for the images and upload them. First you need to put the correct paths in the file [config_preprocessing.py](preprocessing/config_preprocessing.py.template). In case you want to upload the full dataset, just uncomment `STAGE1_LABELS = os.path.join(DATA_PATH, 'stage1_labels.csv')`. To import the images to the SQL database you have to execute the script [insert_scan_images_in_sql_database.py](preprocessing/insert_scan_images_in_sql_database.py). This will take a while.
+The next step is to create a table for the images and upload them. First you need to put the correct paths in the file [config_preprocessing.py](preprocessing/config_preprocessing.py.template). In case you want to upload the full dataset, just uncomment `STAGE1_LABELS = os.path.join(DATA_PATH, 'stage1_labels.csv')`. ~~To import the images to the SQL database you have to execute the script [insert_scan_images_in_sql_database.py](preprocessing/insert_scan_images_in_sql_database.py). This will take a while.~~ To prepare the dicoms for consumption by the microsoftml featurizer, execute [convert_dicoms_to_pngs.py](preprocessing/convert_dicoms_to_pngs.py). This will take a while.
 
 In the mean time, execute the script [insert_other_items_in_sql_database.py](preprocessing/insert_other_items_in_sql_database.py). This script creates and fill tables for the labels, the CNN model and a gif representation of the images. 
 
@@ -91,7 +91,7 @@ You can try to search a patient called Anthony or another call Ana. You can also
 
 The idea of the lung cancer demo is to showcase that a deep learning algorithm can be computed using revoscalepy and microsoftml inside SQL in python. 
 
-The accuracy of the actual algorithm is low. It has a very simple pipeline. This algorithm was created as a baseline for the [lung cancer kaggle competition](https://blogs.technet.microsoft.com/machinelearning/2017/02/17/quick-start-guide-to-the-data-science-bowl-lung-cancer-detection-challenge-using-deep-learning-microsoft-cognitive-toolkit-and-azure-gpu-vms/), to allow users to quickly set up a DSVM and execute a CNTK algorithm. 
+The accuracy of the actual algorithm is low. It has a very simple pipeline. 
 
 An example of an algorithm with higher accuracy can be found [here](https://eliasvansteenkiste.github.io/machine%20learning/lung-cancer-pred/), the pipeline has a 3D CNN for nodule segmentation, one CNN for false positive reduction, another CNN for identifying if the nodule is malignant or not, then transfer learning and finally ensembling.  
 

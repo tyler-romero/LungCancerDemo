@@ -16,7 +16,7 @@ import pkg_resources
 import cv2
 import lung_cancer
 
-print("PYTHONPATH={}".format(os.environ["PYTHONPATH"]))
+#print("PYTHONPATH={}".format(os.environ["PYTHONPATH"]))
 print("PATH={}".format(os.environ["PATH"]))
 
 
@@ -27,8 +27,6 @@ print(os.getcwd())
 version_pandas = pkg_resources.get_distribution("pandas").version
 print("Version pandas: {}".format(version_pandas))
 print("Version OpenCV: {}".format(cv2.__version__))
-version_cntk = pkg_resources.get_distribution("cntk").version
-version_lightgbm = pkg_resources.get_distribution("lightgbm").version
 print("Version Lung Cancer: {}".format(lung_cancer.VERSION))
 
 print("*********************************************************************************************")

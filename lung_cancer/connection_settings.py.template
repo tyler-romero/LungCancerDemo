@@ -7,11 +7,13 @@ USERID = 'demo'
 PASSWORD = 'D@tascience'
 
 #Tables
-TABLE_SCAN_IMAGES = 'dbo.scan_images'
 TABLE_PATIENTS = 'dbo.patients'
 TABLE_LABELS = 'dbo.labels'
 TABLE_FEATURES = 'dbo.features'
-TABLE_MODEL = 'dbo.model'
+TABLE_PCA_FEATURES = 'dbo.pca_features'
+TABLE_TRAIN_ID = 'dbo.train_id'
+TABLE_CLASSIFIERS = 'dbo.classifiers'
+TABLE_PREDICTIONS = 'dbo.predictions'
 TABLE_GIF = 'dbo.gif_url'
 
 #Functions
@@ -26,8 +28,7 @@ def get_connection_string():
 	return connection_string
 
 # Variables
-BATCH_SIZE = 120
-NUMBER_PATIENTS = 200#1595
-CNTK_MODEL_NAME = "ResNet_152.model"
-LIGHTGBM_MODEL_NAME = "lightgbm_sql"
+NUMBER_PATIENTS = 200 #1595
+MICROSOFTML_MODEL_NAME = "Resnet18"
+FASTTREE_MODEL_NAME = "rx_fast_trees"
 
