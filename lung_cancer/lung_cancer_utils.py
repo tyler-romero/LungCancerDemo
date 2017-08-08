@@ -36,7 +36,7 @@ def save_image(scans):
     scipy.misc.imsave(path, scans[0,:,:,:].squeeze().transpose(1,2,0))
 
 
-def gather_image_paths(data, image_folder, n_pics=None): # TODO: refactor to not construct row by row
+def gather_image_paths(data, image_folder, n_pics=None):
     total_counter = 0
     data_to_featurize = pd.DataFrame(columns=("patient_id", "image", "label"), index=range(len(data)))
     for i, row in data.iterrows():

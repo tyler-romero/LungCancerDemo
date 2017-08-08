@@ -28,7 +28,7 @@ data["label"] = data["label"].astype(bool)
 print("Preparing list of images")
 n_patients = 200    # How many patients do we featurize images for?
 data = data.head(n_patients)
-data_to_featurize = gather_image_paths(data, IMAGES_FOLDER, n_pics=2)
+data_to_featurize = gather_image_paths(data, IMAGES_FOLDER)
 
 
 # Featureize images and save to table

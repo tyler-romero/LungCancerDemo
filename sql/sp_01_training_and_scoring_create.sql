@@ -58,6 +58,7 @@ classifier = rx_fast_trees(formula=formula,
 
 # Serialize model and insert into table
 insert_model(TABLE_CLASSIFIERS, connection_string, classifier, FASTTREE_MODEL_NAME)
+print("Model written to {}".format(TABLE_CLASSIFIERS))
 	'
 
 	EXECUTE sp_execute_external_script
@@ -117,6 +118,7 @@ test_sql = RxSqlServerData(sql_query=query, connection_string=connection_string,
 
 # Make predictions on the test data
 predictions = ml_predict(classifier, data=test_sql, extra_vars_to_write=["label", "patient_id"])
+print("Predictions written to dbo.predictions")
 OutputDataSet = predictions
 
 	'

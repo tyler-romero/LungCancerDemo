@@ -24,7 +24,7 @@ BEGIN
     , @script = N'
 from revoscalepy import RxInSqlServer, RxLocalSeq, rx_set_compute_context, RxSqlServerData, rx_data_step
 from lung_cancer.lung_cancer_utils import gather_image_paths, compute_features, average_pool
-from lung_cancer.connection_settings import IMAGES_FOLDER, MICROSOFTML_MODEL_NAME, get_connection_string
+from lung_cancer.connection_settings import IMAGES_FOLDER, MICROSOFTML_MODEL_NAME, TABLE_FEATURES, get_connection_string
 
 connection_string = get_connection_string()
 sql = RxInSqlServer(connection_string=connection_string)
@@ -36,13 +36,13 @@ data = InputDataSet
 print("Preparing list of images")
 n_patients = 200    # How many patients do we featurize images for?
 data = data.head(n_patients)
-data_to_featurize = gather_image_paths(data, IMAGES_FOLDER, n_pics=5)
+data_to_featurize = gather_image_paths(data, IMAGES_FOLDER)
 
 featurized_data = compute_features(data_to_featurize, MICROSOFTML_MODEL_NAME, compute_context=local)
 pooled_data = average_pool(data, featurized_data)
 
-features_sql = RxSqlServerData(table="features", connection_string=connection_string)
-rx_data_step(featurized_data, features_sql, overwrite=True)	
+features_sql = RxSqlServerData(table=TABLE_FEATURES, connection_string=connection_string)
+rx_data_step(pooled_data, features_sql, overwrite=True)	
 '
     , @input_data_1 = N'SELECT patient_id, label FROM labels;';
 END
@@ -91,14 +91,15 @@ train_data = pd.DataFrame(InputDataSet)
 # Perform PCA transform
 n_patients = len(train_data)
 n = min(485, n_patients)    # 485 features is the most that can be handled right now
+print("PCA with n_components={}".format(n))
 pca = IncrementalPCA(n_components=n, whiten=True)
 
-train_data = train_data.drop(["label", "image", "patient_id"], axis=1)
+train_data = train_data.drop(["label", "patient_id"], axis=1)
 pca.fit(train_data)
 
 OutputDataSet = pd.DataFrame({"payload": dill.dumps(pca)}, index=[0])
 '
-    , @input_data_1 = N'SELECT * FROM features WHERE patient_id IN (SELECT patient_id FROM train_id);';
+    , @input_data_1 = N'SELECT * FROM dbo.features WHERE patient_id IN (SELECT patient_id FROM train_id);';
 END
 GO
 
@@ -130,7 +131,7 @@ connection_string = get_connection_string()
 all_data = pd.DataFrame(InputDataSet)
 pca = dill.loads(pca_transform)
 
-feats = all_data.drop(["label", "image", "patient_id"], axis=1)
+feats = all_data.drop(["label", "patient_id"], axis=1)
 feats = pca.transform(feats)
 feats = pd.DataFrame(data=feats, index=all_data.index.values, columns=["pc" + str(i) for i in range(feats.shape[1])])
 pca_data = pd.concat([all_data[["label", "patient_id"]], feats], axis=1)
