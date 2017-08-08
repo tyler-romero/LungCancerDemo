@@ -1,0 +1,33 @@
+# Server constants
+DB_DRIVER = 'ODBC Driver 13 for SQL Server'
+SERVER_NAME = 'localhost'
+PORT_NUMBER = '1443'
+DATABASE_NAME = 'lung_cancer_database'
+USERID = 'demo'
+PASSWORD = 'D@tascience'
+
+#Tables
+TABLE_SCAN_IMAGES = 'dbo.scan_images'
+TABLE_PATIENTS = 'dbo.patients'
+TABLE_LABELS = 'dbo.labels'
+TABLE_FEATURES = 'dbo.features'
+TABLE_MODEL = 'dbo.model'
+TABLE_GIF = 'dbo.gif_url'
+
+#Functions
+def get_connection_string():
+	driver = 'DRIVER={' + DB_DRIVER + '}'
+	port = 'PORT=' + PORT_NUMBER
+	server = 'SERVER=' + SERVER_NAME
+	database = 'DATABASE=' + DATABASE_NAME
+	uid = 'UID=' + USERID
+	pwd = 'PWD=' + PASSWORD
+	connection_string = ';'.join([driver,server,port,database,uid,pwd])
+	return connection_string
+
+# Variables
+BATCH_SIZE = 120
+NUMBER_PATIENTS = 200#1595
+CNTK_MODEL_NAME = "ResNet_152.model"
+LIGHTGBM_MODEL_NAME = "lightgbm_sql"
+

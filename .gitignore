@@ -20,7 +20,6 @@ lib64/
 parts/
 sdist/
 var/
-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
@@ -43,7 +42,7 @@ htmlcov/
 .cache
 nosetests.xml
 coverage.xml
-*.cover
+*,cover
 .hypothesis/
 
 # Translations
@@ -67,7 +66,7 @@ docs/_build/
 # PyBuilder
 target/
 
-# Jupyter Notebook
+# IPython Notebook
 .ipynb_checkpoints
 
 # pyenv
@@ -76,26 +75,26 @@ target/
 # celery beat schedule file
 celerybeat-schedule
 
-# SageMath parsed files
-*.sage.py
-
 # dotenv
 .env
 
 # virtualenv
-.venv
 venv/
 ENV/
 
 # Spyder project settings
 .spyderproject
-.spyproject
 
 # Rope project settings
 .ropeproject
 
-# mkdocs documentation
-/site
-
-# mypy
-.mypy_cache/
+#project
+lung_cancer/connection_settings.py
+preprocessing/config_preprocessing.py
+preprocessing/ResNet_18.model
+preprocessing/ResNet_152.model
+playground.ipynb
+tmp.model
+sql/debug.sql
+.idea
+.vscode
