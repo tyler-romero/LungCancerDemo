@@ -22,33 +22,7 @@ Then you need to restart SQL Server. Right click on the server and then restart.
 
 Finally, to test that everything works correctly you have to execute the file [sqlpytest.sql](sql/sqlpytest.sql).
 
-#### Install CNTK with SQL
-
-We are going to install [CNTK version 2.0](https://github.com/Microsoft/CNTK/releases/tag/v2.0) and only the python biddings directly from the wheels. The information for the last CNTK version can be found [here](https://github.com/Microsoft/CNTK/wiki/Setup-Windows-Python).
-
-The version we will install is CNTK with GPU 1-bit SGD in python 3.5. In a terminal, install the python wheels:
-
-	cd "C:\Program Files\Microsoft SQL Server\YOUR-MSSQL-SERVER-INSTANCE-FOLDER\PYTHON_SERVICES\Scripts"
-	pip.exe install https://cntk.ai/PythonWheel/GPU-1bit-SGD/cntk-2.0-cp35-cp35m-win_amd64.whl
-
-Then, make sure that SQL python loads cntk correctly:
-
-	cd "C:\Program Files\Microsoft SQL Server\YOUR-MSSQL-SERVER-INSTANCE-FOLDER\PYTHON_SERVICES"
-	python.exe -c "import cntk; print(cntk.__version__)"
-
 You need to change the user and password in SQL Server. For that you have to execute the file `change_auth.sql` (changing the variables user and password).
-
-#### Install LightGBM
-LightGBM can be installed via `pip`:
-
-	pip install lightgbm
-
-Make sure that lightgbm is loaded correctly
-
-	cd "C:\Program Files\Microsoft SQL Server\YOUR-MSSQL-SERVER-INSTANCE-FOLDER\PYTHON_SERVICES"
-	python.exe -c "import lightgbm"
-
-For more details in the installation, you can visit  [their home page](https://github.com/Microsoft/LightGBM/wiki/Installation-Guide).
 
 #### Install the rest of the libraries needed to run the the demo
 The next step is to install several libraries that we need to run the demo. First you need to install OpenCV:
@@ -61,7 +35,7 @@ Finally, you need to install the libraries available in the `requirements.txt`. 
 	"C:\Program Files\Microsoft SQL Server\YOUR-MSSQL-SERVER-INSTANCE-FOLDER\PYTHON_SERVICES\Scripts\pip.exe" install -r requirements.txt
 
 #### Install lung cancer detection libraries
-The last step is to install the lung cancer libraries. You have to go to the folder where you donwloaded the libraries and fill up the file [connection_settings.py](lung_cancer/connection_settings.py.template) with your credentials. Another way to add the credentials is using environmnet variables. In this case we use a file embedded in the library because it's easier with the SQL python system. Once the credentials are changed, execute from there:
+The last step is to install the lung cancer libraries. You have to go to the folder where you downloaded the libraries and fill up the file [connection_settings.py](lung_cancer/connection_settings.py.template) with your credentials. Another way to add the credentials is using environmnet variables. In this case we use a file embedded in the library because it's easier with the SQL python system. Once the credentials are changed, execute from there:
 
 	cd PATH-TO-SQL-PYTHON-DEEP-LEARNING-REPO
 	"C:\Program Files\Microsoft SQL Server\YOUR-MSSQL-SERVER-INSTANCE-FOLDER\PYTHON_SERVICES\python.exe" setup.py install
@@ -77,8 +51,6 @@ Once everything was installed, we have to make sure that all libraries can be lo
 C:\PROGRA~1\MICROS~1\MSSQL1~1.MSS\MSSQL\EXTENS~1\MSSQLSERVER01\DD9AFD48-A1BB-49C4-9574-DF93B7A8AFFD
 Version pandas: 0.18.1
 Version OpenCV: 3.1.0
-Version CNTK: 2.0.rc2
-Version LightGBM: 0.1
 Version Lung Cancer: 0.1
 *********************************************************************************************
 ```
