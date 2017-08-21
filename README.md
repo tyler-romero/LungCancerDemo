@@ -15,11 +15,11 @@ We use transfer learning with a pre-trained Convolutional Neural Network (CNN) o
 A similar process is explained in detail in this [blog](https://blogs.technet.microsoft.com/machinelearning/2017/02/17/quick-start-guide-to-the-data-science-bowl-lung-cancer-detection-challenge-using-deep-learning-microsoft-cognitive-toolkit-and-azure-gpu-vms/).
 
 
-To create the featurizer, we remove the last layer of the pretrained CNN (in this example we used the [ResNet architecture](https://arxiv.org/abs/1512.03385)) and use the output of the penultimate layer as features. Each patient has an arbitrary number of scan images. The images are cropped to `224×244` to match the format of ImageNet. They are fed to the pre-trained network in k batches and then convoluted in each internal layer, until the penultimate one. The output of the network average-pooled for each patient, and then PCA is performed to reduce the total number of features. These avarage-pooled, dimension-reduced features are the features we feed to the fast trees model.
+To create the featurizer, we remove the last layer of the pretrained CNN (in this example we used the [ResNet architecture](https://arxiv.org/abs/1512.03385)) and use the output of the penultimate layer as features. Each patient has an arbitrary number of scan images. The images are cropped to `224×244` to match the format of ImageNet. They are fed to the pre-trained network in k batches and then convoluted in each internal layer, until the penultimate one. The output of the network average-pooled for each patient. These avarage-pooled, dimension-reduced features are the features we feed to the fast trees model.
 
 Once the fast trees model is trained, it can be operationalized to classify cancerous scans for other patients using a web app.
 
-In the next sections we will explain how to execute this system inside SQL. All the data, models and resulting features are stored and queried in different tables of a SQL database. There are 3 main processes: featurization, training and scoring. The are explained next together with an initial setup.
+In the next sections we will explain how to execute this system inside SQL. All the data, models and resulting features are stored and queried in different tables of a SQL database. There are 3 main processes: featurization, training and scoring.
 
 
 ## Installation
@@ -37,16 +37,18 @@ We have to download the data from [kaggle dataset](https://www.kaggle.com/c/data
 
 We are going to upload the images to SQL. The reason for doing this, instead of reading the images directly from disk, is because we want to simulate an scenario where all the data is already in SQL. For demo purposes we are going to use a small subset of the images, they can be found in [stage1_labels_partial.csv](data/stage1_labels_partial.csv). This subset consists of 200 patients out of 1595. The complete patient info is [stage1_labels.csv](data/stage1_labels.csv).
 
-The first step is to create in SQL Server a database called `lung_cancer_database`. 
+The first step is to create in SQL Server a database called `LungCancer`. We also require that FileTables are enabled on the database. This is for working with image data in SQL Server. Follow the instructions [here](https://docs.microsoft.com/en-us/sql/relational-databases/blob/enable-the-prerequisites-for-filetable) to set it up. Execute [file_table_creation.sql](sql/file_table_creation.sql) in order to create this database and allow it to support FileTables. This script will also create a FileTable called `MriData`.
 
-The next step is to create a table for the images and upload them. First you need to put the correct paths in the file [config_preprocessing.py](preprocessing/config_preprocessing.py.template). In case you want to upload the full dataset, just uncomment `STAGE1_LABELS = os.path.join(DATA_PATH, 'stage1_labels.csv')`. ~~To import the images to the SQL database you have to execute the script [insert_scan_images_in_sql_database.py](preprocessing/insert_scan_images_in_sql_database.py). This will take a while.~~ To prepare the dicoms for consumption by the microsoftml featurizer, execute [convert_dicoms_to_pngs.py](preprocessing/convert_dicoms_to_pngs.py). This will take a while.
+In addition, SQLRUsergroup user group should be granted dbreader access on your database. Otherwise, the sp_execute_external_script won't be able to access the image files.
+
+The next step is to upload the images. First you need to put the correct paths in the file [config_preprocessing.py](preprocessing/config_preprocessing.py.template). In case you want to upload the full dataset, just uncomment `STAGE1_LABELS = os.path.join(DATA_PATH, 'stage1_labels.csv')`. In addition, you need to set `IMAGES_FOLDER` to the location of your file table. To import the images to the SQL database using the FileTable you have set up, you have to execute the script [insert_scan_images_in_sql_database.py](preprocessing/insert_scan_images_in_sql_database.py). This will take a while.
 
 In the mean time, execute the script [insert_other_items_in_sql_database.py](preprocessing/insert_other_items_in_sql_database.py). This script creates and fill tables for the labels, the CNN model and a gif representation of the images. 
 
 ## Python Workflow
 The python workflow is meant to demonstrate how a data scientist might prepare the model prior to operationalizing it in SQL.
 
-There are two ways to walk through this workflow. One is by executing the stepN_*.py files in order. These files will generate features, perform PCA, train a fast trees model, and score the fast trees model. The other way is to walk through the ipython notebook: [data_scientist_workflow.ipynb](Python/data_scientist_workflow.ipynb).
+There are two ways to walk through this workflow. One is by executing the stepN_*.py files in order. These files will generate features, perform average pooling, train a fast trees model, and score the fast trees model. The other way is to walk through the ipython notebook: [data_scientist_workflow.ipynb](Python/data_scientist_workflow.ipynb).
 
 ## SQL Workflow
 ### Process 1: Featurization of Lung Scans with CNN

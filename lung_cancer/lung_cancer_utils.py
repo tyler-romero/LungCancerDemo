@@ -4,6 +4,7 @@ import pandas as pd
 import pkg_resources
 import pickle
 import pyodbc
+import dicom
 from pandas import DataFrame
 from sklearn.metrics import roc_auc_score, roc_curve
 import matplotlib.pyplot as plt
@@ -14,11 +15,20 @@ from microsoftml import load_image, resize_image, extract_pixels, featurize_imag
 
 
 ######################################################################
-
+# For verifying setup
 def print_library_version():
     print(os.getcwd())
     version_pandas = pkg_resources.get_distribution("pandas").version
     print("Version pandas: {}".format(version_pandas))
+
+
+######################################################################
+# For preprocessing
+def convert_dicom_to_png(dicom_path, image_path):
+    slices = [(dicom.read_file(os.path.join(dicom_path, s)),s) for s in os.listdir(dicom_path)]
+    for slice, file_name in slices:
+        path = os.path.join(image_path, file_name[:-4]+'.png')
+        scipy.misc.imsave(path, slice.pixel_array)
 
 
 ######################################################################
@@ -36,19 +46,14 @@ def save_image(scans):
     scipy.misc.imsave(path, scans[0,:,:,:].squeeze().transpose(1,2,0))
 
 
-def gather_image_paths(data, image_folder, n_pics=None):
-    total_counter = 0
-    data_to_featurize = pd.DataFrame(columns=("patient_id", "image", "label"), index=range(len(data)))
-    for i, row in data.iterrows():
-        folder = os.path.join(image_folder, row["patient_id"])
-        patient_image_paths = [os.path.join(folder, s) for s in os.listdir(folder)]
-        for n, image_path in enumerate(patient_image_paths):
-            if n == n_pics: break
-            data_to_featurize.loc[total_counter] = [row["patient_id"], image_path, row["label"]]
-            total_counter += 1
-        print("Gathered {} images for patient #{} with id: {}".format(len(patient_image_paths), i, row["patient_id"]))
-    print("Gathered {} total images".format(total_counter))
-    return data_to_featurize
+def gather_image_paths(images_folder):
+    root = os.path.dirname(images_folder)
+    query = 'SELECT ([file_stream].GetFileNamespacePath()) as image FROM [MriData] WHERE [is_directory] = 0'
+    filetable_sql = RxSqlServerData(sql_query=query, connection_string=connection_string)
+    data = rx_import(filetable_sql)
+    data["image"] = data["image"].apply(lambda x: os.path.join(root, x[1:]))    # TODO: assert to confirm paths exist
+    data["patient_id"] = data["image"].map(lambda x: os.path.basename(os.path.dirname(x)))
+    return data
 
 
 def compute_features(data, model, compute_context):
@@ -67,20 +72,16 @@ def compute_features(data, model, compute_context):
         report_progress=2,
         verbose=2
     )
+    featurized_data.columns = ["patient_id"] + ["f" + str(i) for i in range(len(featurized_data.columns)-1)]
     return featurized_data
 
 
-def insert_model(table_name, connection_string, classifier, name):
-    classifier_odbc = RxOdbcData(connection_string, table=table_name)
-    rx_write_object(classifier_odbc, key=name, value=classifier, serialize=True, overwrite=True)
+def average_pool(featurized_data):
+    return featurized_data.groupby("patient_id").mean().reset_index()
 
 
-def retrieve_model(table_name, connection_string, name):
-    classifier_odbc = RxOdbcData(connection_string, table=table_name)
-    classifier = rx_read_object(classifier_odbc, key=name, deserialize=True)
-    return classifier
-
-
+#########################################################################
+#for scoring and evaluating
 def train_test_split(train_id_table, patients_table, p, connection_string):
     pyodbc_cnxn = pyodbc.connect(connection_string)
     pyodbc_cursor = pyodbc_cnxn.cursor()
@@ -91,20 +92,6 @@ def train_test_split(train_id_table, patients_table, p, connection_string):
     pyodbc_cnxn.close()
 
 
-def average_pool(labels, featurized_data):
-    features = []
-    for i, row in labels.iterrows():
-        patient = featurized_data[featurized_data["patient_id"] == row.patient_id]
-        avg_pool_features = patient.drop(["image", "label", "patient_id"], axis=1).mean(axis=0).tolist()  # Todo: do list concat in the pandas way
-        features.append(avg_pool_features)
-    col_names = ["f" + str(i) for i in range(len(features[0]))]
-    features = pd.DataFrame(features, columns=col_names, index=labels.index.values)
-    pooled_data = pd.concat([labels, features], axis=1)
-    return pooled_data
-
-
-#########################################################################
-#for scoring and evaluating
 def get_patient_id_from_index(table_name, connection_string, patient_index):
     patients = get_patients_id(table_name, connection_string)  #FIXME: this could be faster with a new table with (idx, id)
     return patients[patient_index]
@@ -130,6 +117,18 @@ def roc(y, y_hat):
     plt.legend(loc="lower right")
     plt.show()
 
+
+def insert_model(table_name, connection_string, classifier, name):
+    classifier_odbc = RxOdbcData(connection_string, table=table_name)
+    rx_write_object(classifier_odbc, key=name, value=classifier, serialize=True, overwrite=True)
+
+
+def retrieve_model(table_name, connection_string, name):
+    classifier_odbc = RxOdbcData(connection_string, table=table_name)
+    classifier = rx_read_object(classifier_odbc, key=name, deserialize=True)
+    return classifier
+
+
 #########################################################################
 # for API
 #code from https://github.com/miguelgfierro/codebase/blob/master/python/database/sql_server/select_values.py
@@ -140,6 +139,7 @@ def select_entry_where_column_equals_value(table_name, connection_string, column
     data = rx_import(query_sql)
     return data
 
+
 def select_top_value_of_column(table_name, connection_string, column_name):
     query = "SELECT TOP(1) " + column_name + " FROM " + table_name
     print(query)
@@ -147,6 +147,3 @@ def select_top_value_of_column(table_name, connection_string, column_name):
     data = rx_import(query_sql)
     print(data)
     return data.iloc[0, 0]
-
-def test_func():
-    print("hello world")

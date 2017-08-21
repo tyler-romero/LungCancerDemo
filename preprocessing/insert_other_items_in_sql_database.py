@@ -3,10 +3,10 @@ import numpy as np
 import pandas as pd
 import pyodbc
 import pickle
-from lung_cancer.connection_settings import get_connection_string, TABLE_GIF, TABLE_LABELS, TABLE_PATIENTS
+from lung_cancer.connection_settings import get_connection_string, TABLE_GIF, TABLE_LABELS, TABLE_PATIENTS, TABLE_SCAN_IMAGES
 import wget
 import datetime
-from config_preprocessing import STAGE1_LABELS, LIB_CNTK, BASE_URL
+from config_preprocessing import STAGE1_LABELS, BASE_URL
 
 
 def create_table_gifs(table_name, cursor, connector, drop_table=False):
@@ -76,7 +76,7 @@ if __name__ == "__main__":
     connection_string = get_connection_string()
     conn = pyodbc.connect(connection_string)
     cur = conn.cursor()
-    print("Creating tables {}, {}, {}".format(TABLE_GIF, TABLE_LABELS, TABLE_MODEL))
+    print("Creating tables {}, {}".format(TABLE_GIF, TABLE_LABELS))
     create_table_gifs(TABLE_GIF, cur, conn, True)
     create_table_labels(TABLE_LABELS, cur, conn, True)
     create_table_patient_index(TABLE_PATIENTS, cur, conn, True)

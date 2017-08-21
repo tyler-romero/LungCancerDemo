@@ -1,7 +1,8 @@
-from lung_cancer.connection_settings import get_connection_string, TABLE_CLASSIFIERS, TABLE_PCA_FEATURES, TABLE_PATIENTS, FASTTREE_MODEL_NAME
-from lung_cancer.lung_cancer_utils import retrieve_model
 from revoscalepy import RxInSqlServer, RxLocalSeq, rx_set_compute_context, RxSqlServerData
 from microsoftml import rx_predict as ml_predict
+
+from lung_cancer.connection_settings import get_connection_string, TABLE_CLASSIFIERS, TABLE_FEATURES, TABLE_PATIENTS, FASTTREE_MODEL_NAME
+from lung_cancer.lung_cancer_utils import retrieve_model
 
 
 # Connect to SQL Server and set compute context
@@ -16,7 +17,7 @@ PatientIndex = 20
 
 
 # Select patient data
-query = "SELECT TOP(1) * FROM {} AS t1 INNER JOIN {} AS t2 ON t1.patient_id = t2.patient_id WHERE t2.idx = {}".format(TABLE_PCA_FEATURES, TABLE_PATIENTS, PatientIndex)
+query = "SELECT TOP(1) * FROM {} AS t1 INNER JOIN {} AS t2 ON t1.patient_id = t2.patient_id WHERE t2.idx = {}".format(TABLE_FEATURES, TABLE_PATIENTS, PatientIndex)
 patient_sql = RxSqlServerData(sql_query=query, connection_string=connection_string)
 
 

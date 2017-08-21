@@ -6,11 +6,14 @@ DATABASE_NAME = 'lung_cancer_database'
 USERID = 'demo'
 PASSWORD = 'D@tascience'
 
+# Path to images
+IMAGES_FOLDER = '\\\\[COMPUTER-NAME]\\[SQLServerInstance]\\FileTableData\\MriData'
+
 #Tables
 TABLE_PATIENTS = 'dbo.patients'
 TABLE_LABELS = 'dbo.labels'
+TABLE_SCAN_IMAGES = 'dbo.MriData'
 TABLE_FEATURES = 'dbo.features'
-TABLE_PCA_FEATURES = 'dbo.pca_features'
 TABLE_TRAIN_ID = 'dbo.train_id'
 TABLE_CLASSIFIERS = 'dbo.classifiers'
 TABLE_PREDICTIONS = 'dbo.predictions'

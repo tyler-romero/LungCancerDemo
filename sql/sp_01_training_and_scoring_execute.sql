@@ -1,3 +1,6 @@
+print 'TrainTestSplit'
+exec dbo.TrainTestSplit;
+
 print 'TrainModel'
 exec dbo.TrainModel;
 
