@@ -3,8 +3,6 @@ DB_DRIVER = 'ODBC Driver 13 for SQL Server'
 SERVER_NAME = 'localhost'
 PORT_NUMBER = '1443'
 DATABASE_NAME = 'lung_cancer_database'
-USERID = 'demo'
-PASSWORD = 'D@tascience'
 
 # Path to images
 IMAGES_FOLDER = '\\\\[COMPUTER-NAME]\\[SQLServerInstance]\\FileTableData\\MriData'
@@ -25,9 +23,9 @@ def get_connection_string():
 	port = 'PORT=' + PORT_NUMBER
 	server = 'SERVER=' + SERVER_NAME
 	database = 'DATABASE=' + DATABASE_NAME
-	uid = 'UID=' + USERID
-	pwd = 'PWD=' + PASSWORD
-	connection_string = ';'.join([driver,server,port,database,uid,pwd])
+	trusted = 'Trusted_Connection=Yes'
+	connection_string = ';'.join([driver,server,port,database,trusted])
+	print(connection_string)
 	return connection_string
 
 # Variables

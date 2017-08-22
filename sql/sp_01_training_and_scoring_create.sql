@@ -1,4 +1,4 @@
-USE [LungCancerDemo2]
+USE [lung_cancer_database]
 GO
 
 
@@ -55,7 +55,7 @@ classifier = rx_fast_trees(formula=formula,
                            num_trees=1000,
                            method="binary",
                            random_seed=5,
-                           compute_context=local)
+                           compute_context=local)	# TODO: sql not currently working correctly. Change to sql later.
 
 # Serialize model and insert into table
 insert_model(TABLE_CLASSIFIERS, connection_string, classifier, FASTTREE_MODEL_NAME)

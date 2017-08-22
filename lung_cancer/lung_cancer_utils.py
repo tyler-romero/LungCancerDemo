@@ -10,9 +10,8 @@ from sklearn.metrics import roc_auc_score, roc_curve
 import matplotlib.pyplot as plt
 import scipy.misc
 
-from revoscalepy import RxSqlServerData, rx_import, rx_read_object, rx_write_object, RxOdbcData, rx_get_var_names
+from revoscalepy import RxSqlServerData, rx_import, rx_read_object, rx_write_object, RxOdbcData, rx_get_var_names, rx_data_step
 from microsoftml import load_image, resize_image, extract_pixels, featurize_image, rx_featurize
-
 
 ######################################################################
 # For verifying setup
@@ -46,7 +45,7 @@ def save_image(scans):
     scipy.misc.imsave(path, scans[0,:,:,:].squeeze().transpose(1,2,0))
 
 
-def gather_image_paths(images_folder):
+def gather_image_paths(images_folder, connection_string):
     root = os.path.dirname(images_folder)
     query = 'SELECT ([file_stream].GetFileNamespacePath()) as image FROM [MriData] WHERE [is_directory] = 0'
     filetable_sql = RxSqlServerData(sql_query=query, connection_string=connection_string)
@@ -56,23 +55,26 @@ def gather_image_paths(images_folder):
     return data
 
 
-def compute_features(data, model, compute_context):
-    featurized_data = rx_featurize(
+def featurize_transform(dataset, context):
+    from microsoftml import load_image, resize_image, extract_pixels, featurize_image, rx_featurize
+    from lung_cancer.connection_settings import MICROSOFTML_MODEL_NAME
+    data = DataFrame(dataset)
+    data = rx_featurize(
         data=data,
-        # output_data=features_sql,   # The type (RxSqlServerData) for file is not supported. TODO: use RxSqlServerData for output when its supported
         overwrite=True,
         ml_transforms=[
             load_image(cols={"feature": "image"}),
             resize_image(cols="feature", width=224, height=224),
             extract_pixels(cols="feature"),
-            featurize_image(cols="feature", dnn_model=model)
-        ],
-        ml_transform_vars=["image"],
-        compute_context=compute_context,
-        report_progress=2,
-        verbose=2
+            featurize_image(cols="feature", dnn_model=MICROSOFTML_MODEL_NAME)
+        ]
     )
-    featurized_data.columns = ["patient_id"] + ["f" + str(i) for i in range(len(featurized_data.columns)-1)]
+    return data
+
+
+def compute_features(data):
+    featurized_data = rx_data_step(input_data=data, overwrite=True, transform_function=featurize_transform)
+    featurized_data.columns = ["image", "patient_id"] + ["f" + str(i) for i in range(len(featurized_data.columns)-2)]
     return featurized_data
 
 
@@ -86,7 +88,7 @@ def train_test_split(train_id_table, patients_table, p, connection_string):
     pyodbc_cnxn = pyodbc.connect(connection_string)
     pyodbc_cursor = pyodbc_cnxn.cursor()
     pyodbc_cursor.execute("DROP TABLE if exists {};".format(train_id_table))
-    pyodbc_cursor.execute("SELECT DISTINCT patient_id INTO {} FROM {} WHERE ABS(CAST(BINARY_CHECKSUM(idx, NEWID()) as int)) % 100 < {} ;".format(p, train_id_table, patients_table))
+    pyodbc_cursor.execute("SELECT DISTINCT patient_id INTO {} FROM {} WHERE ABS(CAST(BINARY_CHECKSUM(idx, NEWID()) as int)) % 100 < {} ;".format(train_id_table, patients_table, p))
     pyodbc_cursor.close()
     pyodbc_cnxn.commit()
     pyodbc_cnxn.close()

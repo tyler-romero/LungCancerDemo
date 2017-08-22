@@ -1,4 +1,4 @@
-USE [LungCancerDemo2]
+USE [lung_cancer_database]
 GO
 
 print 'GenerateFeatures'

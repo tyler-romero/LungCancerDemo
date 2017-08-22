@@ -23,8 +23,8 @@ BEGIN
 	-- Insert statements for procedure here
 	DECLARE @predictScript NVARCHAR(MAX);
 	SET @predictScript = N'
-from lung_cancer.connection_settings_microsoftml import get_connection_string, TABLE_CLASSIFIERS, TABLE_FEATURES, TABLE_PATIENTS
-from lung_cancer.lung_cancer_utils_microsoftml import retrieve_model
+from lung_cancer.connection_settings import get_connection_string, TABLE_CLASSIFIERS, TABLE_FEATURES, TABLE_PATIENTS
+from lung_cancer.lung_cancer_utils import retrieve_model
 from revoscalepy import RxInSqlServer, rx_set_compute_context, RxSqlServerData
 from microsoftml import rx_predict as ml_predict
 
@@ -45,7 +45,6 @@ print(predictions.head())
 
 PredictionResult = float(predictions["Probability"].iloc[0])*100
 print("The probability of cancer for patient {} is {}%".format(PatientIndex, PredictionResult))
-
 	'
 	EXECUTE sp_execute_external_script
 	@language = N'python',

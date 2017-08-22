@@ -1,2 +1,5 @@
+USE [lung_cancer_database]
+GO
+
 DECLARE @PredictionResultSP FLOAT;
-EXECUTE lung_cancer_database.dbo.PredictLungCancer @PatientIndex = 5, @ModelName = "rx_fast_trees", @PredictionResult = @PredictionResultSP;
+EXECUTE PredictLungCancer @PatientIndex = 5, @ModelName = "rx_fast_trees", @PredictionResult = @PredictionResultSP;

@@ -1,4 +1,4 @@
-USE [LungCancerDemo2]
+USE [lung_cancer_database]
 GO
 
 
@@ -30,12 +30,11 @@ BEGIN
 	EXECUTE sp_execute_external_script
       @language = N'Python'
     , @script = N'
-import os
 from revoscalepy import RxInSqlServer, RxLocalSeq, rx_set_compute_context, RxSqlServerData, rx_data_step
 from lung_cancer.lung_cancer_utils import compute_features, average_pool
-from lung_cancer.connection_settings import MICROSOFTML_MODEL_NAME, get_integrated_authentication_connection_string
+from lung_cancer.connection_settings import MICROSOFTML_MODEL_NAME, get_connection_string
 
-connection_string = get_integrated_authentication_connection_string()
+connection_string = get_connection_string()
 sql = RxInSqlServer(connection_string=connection_string)
 local = RxLocalSeq()
 rx_set_compute_context(local)
@@ -43,7 +42,9 @@ rx_set_compute_context(local)
 data = InputDataSet
 data["patient_id"] = data["image"].map(lambda x: os.path.basename(os.path.dirname(x)))
 
-featurized_data = compute_features(data, MICROSOFTML_MODEL_NAME, compute_context=sql)
+rx_set_compute_context(sql)
+featurized_data = compute_features(data)
+rx_set_compute_context(local)
 print(featurized_data.head())
 
 pooled_data = average_pool(featurized_data)
