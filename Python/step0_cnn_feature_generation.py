@@ -19,9 +19,9 @@ print("Number of images to featurize: {}".format(len(data)))
 
 # Featureize images
 print("Featurizing Images")
-#rx_set_compute_context(sql)
+rx_set_compute_context(local)   # TODO: sql not working correctly. Change to sql later.
 featurized_data = compute_features(data)
-#rx_set_compute_context(local)
+rx_set_compute_context(local)
 
 # Average Pooling
 print("Performing Average Pooling")
